@@ -13,6 +13,13 @@ and a filename to link from and a filename to link to.
 Add monitoring of writes to linked files?
 */
 
+typedef struct _file_info {
+
+struct _file_info *next;
+char filename[256];
+
+} file_info;
+
 extern int errno;
 
 int
