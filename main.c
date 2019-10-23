@@ -25,7 +25,7 @@ main (int argc, char **argv)
   char dest_name[256];
   char from_name[256];
   struct stat buf;
-  time_t t_time_watch,t_time;
+  time_t t_time_watch, t_time;
   char start_time[26];
 
 
@@ -45,17 +45,18 @@ main (int argc, char **argv)
 
   printf ("Starting from our own process id: %d\n", from);
 
-  snprintf (dest_name,256, "%s", argv[3]);
-  i= stat (dest_name, &buf);
-  if (i < 0) {
-printf("ERROR with stat() on %s",dest_name);
-return(-1);
-}
+  snprintf (dest_name, 256, "%s", argv[3]);
+  i = stat (dest_name, &buf);
+  if (i < 0)
+    {
+      printf ("ERROR with stat() on %s", dest_name);
+      return (-1);
+    }
 
   t_time = buf.st_mtim.tv_sec;
-  snprintf(start_time,25,"%s",ctime(&t_time));
+  snprintf (start_time, 25, "%s", ctime (&t_time));
 
-   t_time_watch = buf.st_mtim.tv_sec;
+  t_time_watch = buf.st_mtim.tv_sec;
   for (x = from; x <= to; x++)
     {
       sprintf (from_name, "/tmp/%s%d", argv[2], x);
@@ -71,19 +72,22 @@ return(-1);
 
     }
 
-while (t_time == t_time_watch) {
+  while (t_time == t_time_watch)
+    {
 
- i = stat (dest_name, &buf);
- t_time_watch = buf.st_mtim.tv_sec;
+      i = stat (dest_name, &buf);
+      t_time_watch = buf.st_mtim.tv_sec;
 
-}
+    }
 
-if (t_time != t_time_watch) {
- 
-printf("[+] The target file %s has been over written!\n", dest_name);
-printf("[+] Modification time changed from %s to %s\n",start_time,ctime(&t_time_watch));
+  if (t_time != t_time_watch)
+    {
 
-}
+      printf ("[+] The target file %s has been over written!\n", dest_name);
+      printf ("[+] Modification time changed from %s to %s\n", start_time,
+	      ctime (&t_time_watch));
+
+    }
 
   return (0);
 }
