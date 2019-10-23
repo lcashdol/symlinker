@@ -9,6 +9,8 @@
 in the filename.
 First we need to take arguments that consist of a range of numbers
 and a filename to link from and a filename to link to.
+
+Add monitoring of writes to linked files?
 */
 
 extern int errno;
