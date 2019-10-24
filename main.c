@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 
 
 /*symlink creator to abuse files creation in /tmp where the pid is used
@@ -16,6 +17,8 @@ Add monitoring of writes to linked files?
 */
 
 extern int errno;
+int scan_big (int *a, int n);
+int get_latest_pid(void);
 
 int
 main (int argc, char **argv)
@@ -77,6 +80,10 @@ main (int argc, char **argv)
 
       i = stat (dest_name, &buf);
       t_time_watch = buf.st_mtim.tv_sec;
+      if (get_latest_pid() > to) {
+        printf("Failed: The next pid will be past our largest in /tmp links\n");
+	exit(1);
+      }
 
     }
 
@@ -90,4 +97,37 @@ main (int argc, char **argv)
     }
 
   return (0);
+}
+
+
+int
+get_latest_pid(void)
+{
+  DIR *dirp;
+  struct dirent *direntp;
+  int x = 0,array[256];
+
+  dirp = opendir ("/proc/pinfo");
+  while ((direntp = readdir (dirp)) != NULL)
+    {
+      if (strstr (direntp->d_name, ".") == 0)
+	array[x] = atoi (direntp->d_name);
+      x++;
+    }
+  closedir (dirp);
+  return(scan_big (array, x));
+}
+
+
+int
+scan_big (int *a, int n)
+{
+  int big = 0, x;
+  big = a[0];
+  for (x = 0; x < n; x++)
+    {
+      if (a[x] > big)
+	big = a[x];
+    }
+  return (big);
 }
