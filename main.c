@@ -34,7 +34,7 @@ main (int argc, char **argv)
   if (argc == 1)
     {
 
-      printf ("Simlinker v1.0 \n");
+      printf ("Simlinker v1.0\nLarry W. Cashdollar Oct/2019\n\n");
       printf
 	("Usage: %s number of symlinks starting from my pid:%d from_file to_file\n",
 	 argv[0], from);
@@ -79,8 +79,8 @@ main (int argc, char **argv)
     {
       i = stat (dest_name, &buf);
       t_time_watch = buf.st_mtim.tv_sec;
-      if (get_latest_pid() > to) {
-        printf("Failed: The next pid will be past our largest in /tmp links\n");
+      if (get_latest_pid() => to) {
+        printf("Failed: The next pid will be past our largest predicted pid in /tmp links\ntry a larger number of links for busier systems.\n");
 	exit(1);
       }
 
