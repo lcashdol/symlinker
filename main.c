@@ -168,7 +168,7 @@ unlink_files (files * fstruc)
     {
       tmp = fstruc;
       printf ("->%s\n", fstruc->filename);
-      //unlink(fstruc->filename);
+      unlink(fstruc->filename);
       fstruc = fstruc->next;
       free (tmp);
     }
