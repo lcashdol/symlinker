@@ -43,7 +43,7 @@ main (int argc, char **argv)
 
       printf ("Simlinker v1.0\nLarry W. Cashdollar Oct/2019\n\n");
       printf
-	("Usage: %s number of symlinks starting from my pid:%d from_file to_file\n",
+	("Usage: %s n symlinks starting from pid:%d from_file to_file\n",
 	 argv[0], from);
       return (0);
     }
@@ -164,10 +164,11 @@ unlink_files (files * fstruc)
   tmp = fstruc;
   fstruc = fstruc->next;
   free (tmp);
+  printf ("Cleaning up....\n");
   while (fstruc)
     {
       tmp = fstruc;
-      printf ("->%s\n", fstruc->filename);
+      printf ("Unlinking -> %s\n", fstruc->filename);
       unlink(fstruc->filename);
       fstruc = fstruc->next;
       free (tmp);
