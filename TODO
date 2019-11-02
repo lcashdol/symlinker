@@ -1,3 +1,7 @@
 Add usage of getopt() - Done
 MAXSIZE 256 - Done
 Solaris Support - Done
+Use our get_lastest pid function to get the latest pid id instead of getpid()
+allow special formatting of from file to be linked infrom e.g.
+
+/tmp/file##_filename -> /tmp/file[PIDHERE]_filename
