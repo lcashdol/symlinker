@@ -46,7 +46,8 @@ main (int argc, char **argv)
   time_t t_time_watch, t_time;
 
 
-  from = getpid ();
+//  from = getpid ();
+  from = get_latest_pid ();
 
   if (argc < 4)
     {
@@ -59,7 +60,7 @@ main (int argc, char **argv)
     }
 
   while ((ch = getopt (argc, argv, "n:f:t:")) != -1)
-    switch (ch)
+    switch ((char) ch)
       {
       case 'n':
 	to = atoi (optarg) + from;
