@@ -85,7 +85,7 @@ main (int argc, char **argv)
   //init our link list
   file_list = malloc (sizeof (files));
   start = file_list;
-  file_list->filename[0] = NULL;
+  bzero(file_list->filename,MAXSIZE);
   file_list->next = NULL;
 
   printf ("Starting from lastest process id read from %s: %d\n", PROC,from);
