@@ -1,6 +1,6 @@
 MAKE=gmake
 CC=gcc
-CFLAGS = -Wall -ggdb -O2 -D IRIX
+CFLAGS = -Wall -ggdb -O2 -D SOLARIS
 CLEAN = $(rm main.o symlink)
 
 
