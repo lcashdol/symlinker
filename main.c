@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <strings.h>
+#include <time.h>
 
 /*
 #Symlink creator to abuse files creation in /tmp where the pid is used in the filename.  
