@@ -105,10 +105,10 @@ main (int argc, char **argv)
   //Create our block of symlinks that we hope root will write too.
   for (x = from; x < to; x++)
     {
-      sprintf (tmp_name, "%s%d", from_name, x);
+      snprintf (tmp_name,MAXSIZE, "%s%d", from_name, x);
       printf ("Symlinking %s->%s\n", tmp_name, dest_name);
       tmp = malloc (sizeof (files));
-      strcpy (tmp->filename, tmp_name);
+      strncpy (tmp->filename, tmp_name,MAXSIZE);
       tmp->next = file_list->next;
       file_list->next = tmp;
 
@@ -119,7 +119,6 @@ main (int argc, char **argv)
 	  printf ("Error: %d, %s\n", result, strerror (errno));
 	  return (-1);
 	}
-    // bzero(from_name,256);
     }
 
 
