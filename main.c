@@ -9,6 +9,7 @@
 #include <strings.h>
 #include <time.h>
 #include <signal.h>
+#include <ctype.h>
 
 /*
 #Symlink creator to abuse files creation in /tmp where the pid is used in the filename.  
@@ -36,7 +37,7 @@ static void sigterm (int sig);
 char *strsep (char **stringp, const char *delim);
 #endif
 
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(LINUX)
 #define PROC "/proc"
 #endif
 
@@ -64,7 +65,7 @@ main (int argc, char **argv)
     {
 
       printf
-	("####            Simlinker v1.2          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
+	("####            Simlinker v1.6          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
       printf ("Usage: %s -n # symlinks -f from_file -t to_file\n", argv[0]);
       printf ("e.g. %s -n 100 dos_unix /etc/passwd\n\n", argv[0]);
       return (0);
@@ -181,14 +182,15 @@ get_latest_pid (void)
   //do this in a way where we don't spawn processes ourselves.
   DIR *dirp;
   struct dirent *direntp;
-  int x = 0, array[MAXSIZE];
+  int x = 0, array[MAXSIZE]={0,0};
 
   dirp = opendir (PROC);
   while ((direntp = readdir (dirp)) != NULL)
     {
-      if (strstr (direntp->d_name, ".") == 0)
-	array[x] = atoi (direntp->d_name);
+      if (strstr (direntp->d_name, ".") == 0 && isdigit(direntp->d_name[0])!=0){
+	array[x] =  atoi (direntp->d_name);
       x++;
+      }
     }
   closedir (dirp);
   return (scan_big (array, x));
