@@ -28,9 +28,11 @@ extern char *optarg;
 int scan_big (int *a, int n);
 int get_latest_pid (void);
 void unlink_files (files * fstruc);
+char *parse (char *string,int p);
 
 #ifdef IRIX
 	#define PROC "/proc/pinfo"
+char *strsep (char **stringp, const char *delim);
 #endif
 
 #ifdef SOLARIS
@@ -42,7 +44,7 @@ int
 main (int argc, char **argv)
 {
   int x = 0, from = 0, errflg = 0, to = 0, result = 0, i = 0, pid = 0, ch = 0;
-  char dest_name[MAXSIZE], from_name[MAXSIZE],tmp_name[MAXSIZE], start_time[26];
+  char dest_name[MAXSIZE], from_name[MAXSIZE],tmp_name[MAXSIZE], start_time[26], *buffer,*s;
   struct stat buf;
   files *file_list, *tmp, *start;
   time_t t_time_watch, t_time;
@@ -104,9 +106,11 @@ main (int argc, char **argv)
   t_time_watch = buf.st_mtim.tv_sec;
   //Create our block of symlinks that we hope root will write too.
       printf ("Symlinking ");
+  buffer = from_name;
+  s = strsep (&buffer, "#");
   for (x = from; x < to; x++)
     {
-      snprintf (tmp_name,MAXSIZE, "%s%d", from_name, x);
+  snprintf (tmp_name, 256, "%s%d%s", s, x, buffer);
       printf ("%s->%s ", tmp_name, dest_name);
       tmp = malloc (sizeof (files));
       strncpy (tmp->filename, tmp_name,MAXSIZE);
@@ -114,6 +118,7 @@ main (int argc, char **argv)
       file_list->next = tmp;
 
       result = symlink (dest_name, tmp_name);
+      //need a free() here 
 
       if (result < 0)
 	{
@@ -208,3 +213,65 @@ unlink_files (files * fstruc)
     }
 printf("\n");
 }
+
+
+
+
+
+/*int
+main (int argc, char **argv)
+{
+
+  char *temp = NULL;
+
+  temp = parse (argv[1]);
+  printf ("%s\n", temp);
+  free (temp);
+  return (0);
+}*/
+
+
+/*char *
+parse (char *string,int p)
+{
+  char buffer[256];
+  char *s, *new;
+  new = malloc (sizeof (char) * 256);
+  s = strsep (&string, "#");
+  strncpy (buffer, string, 256);
+  snprintf (new, 256, "%s%d%s", s, p, buffer);
+  printf("%s",new);
+  return (new);
+}*/
+
+#ifdef IRIX
+char *
+strsep (char **stringp, const char *delim)
+{
+  char *s;
+  const char *spanp;
+  int c, sc;
+  char *tok;
+  if ((s = *stringp) == NULL)
+    return (NULL);
+  for (tok = s;;)
+    {
+      c = *s++;
+      spanp = delim;
+      do
+	{
+	  if ((sc = *spanp++) == c)
+	    {
+	      if (c == 0)
+		s = NULL;
+	      else
+		s[-1] = 0;
+	      *stringp = s;
+	      return (tok);
+	    }
+	}
+      while (sc != 0);
+    }
+  /* NOTREACHED */
+}
+#endif
