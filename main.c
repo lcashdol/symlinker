@@ -187,7 +187,7 @@ get_latest_pid (void)
   dirp = opendir (PROC);
   while ((direntp = readdir (dirp)) != NULL)
     {
-      if (strstr (direntp->d_name, ".") == 0 && isdigit(direntp->d_name[0])!=0){
+      if (!strstr (direntp->d_name, ".") && isdigit((int)direntp->d_name[0])){
 	array[x] =  atoi (direntp->d_name);
       x++;
       }
