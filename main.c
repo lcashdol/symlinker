@@ -118,7 +118,6 @@ main (int argc, char **argv)
       file_list->next = tmp;
 
       result = symlink (dest_name, tmp_name);
-      //need a free() here 
 
       if (result < 0)
 	{
