@@ -66,8 +66,9 @@ main (int argc, char **argv)
 
       printf
 	("####            Simlinker v1.6          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
-      printf ("Usage: %s -n # symlinks -f from_file -t to_file\n", argv[0]);
-      printf ("e.g. %s -n 100 dos_unix /etc/passwd\n\n", argv[0]);
+      printf ("Usage: %s -n # symlinks -f from_file# -t to_file\n", argv[0]);
+      printf ("e.g. %s -n 100 dos_unix# /etc/passwd\n\n", argv[0]);
+      printf ("Where # is the placement of the pid in the filename.\n");
       return (0);
     }
 
