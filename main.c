@@ -75,17 +75,9 @@ main (int argc, char **argv)
   if (argc < 4)
     {
 
-<<<<<<< HEAD
       print_c (BLU,"####            Simlinker v1.6          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
       printf ("Usage: %s -n # symlinks -f from_file -t to_file\n", argv[0]);
       printf ("e.g. %s -n 100 dos_unix /etc/passwd\n\n", argv[0]);
-=======
-      printf
-	("####            Simlinker v1.6          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
-      printf ("Usage: %s -n # symlinks -f from_file# -t to_file\n", argv[0]);
-      printf ("e.g. %s -n 100 dos_unix# /etc/passwd\n\n", argv[0]);
-      printf ("Where # is the placement of the pid in the filename.\n");
->>>>>>> 6fac19ae854448d42720de2eab9d7dc4ecb75d2e
       return (0);
     }
 
