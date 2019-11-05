@@ -12,4 +12,4 @@ symlink	: main.o
 
 
 clean	:
-	@rm main.o symlink 
+	@rm -f main.o symlink 
