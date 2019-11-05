@@ -10,6 +10,7 @@
 #include <time.h>
 #include <signal.h>
 #include <ctype.h>
+#include <stdarg.h>
 
 /*
 #Symlink creator to abuse files creation in /tmp where the pid is used in the filename.  
@@ -18,6 +19,15 @@
 */
 
 #define MAXSIZE 256
+#define NRM  "\x1B[0m"
+#define RED  "\x1B[31m"
+#define GRN  "\x1B[32m"
+#define YEL  "\x1B[33m"
+#define BLU  "\x1B[34m"
+#define MAG  "\x1B[35m"
+#define CYN  "\x1B[36m"
+#define WHT  "\x1B[37m"
+
 
 typedef struct _files
 {
@@ -30,7 +40,8 @@ extern char *optarg;
 int scan_big (int *a, int n);
 int get_latest_pid (void);
 void unlink_files (files * fstruc);
-static void sigterm (int sig);
+void sigterm (int sig);
+int print_c (char *color, const char *format,...);
 
 #ifdef IRIX
 #define PROC "/proc/pinfo"
@@ -64,8 +75,7 @@ main (int argc, char **argv)
   if (argc < 4)
     {
 
-      printf
-	("####            Simlinker v1.6          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
+      print_c (BLU,"####            Simlinker v1.6          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
       printf ("Usage: %s -n # symlinks -f from_file -t to_file\n", argv[0]);
       printf ("e.g. %s -n 100 dos_unix /etc/passwd\n\n", argv[0]);
       return (0);
@@ -136,14 +146,14 @@ main (int argc, char **argv)
 
       if (result < 0)
 	{
-	  printf ("Error: %d, %s\n", result, strerror (errno));
+	  print_c (RED,"Error: %d, %s\n", result, strerror (errno));
 	  return (-1);
 	}
     }
 
 
-  printf
-    ("\n[+] Waiting on a write to one of our predicted links in /tmp or pid to grow past the links we created.\n");
+  print_c
+    (GRN,"\n[+] Waiting on a write to one of our predicted links in /tmp or pid to grow past the links we created.\n");
 // Watch the target file to see if it's over written and check to see if the newest process pid
 // is larger than our biggest predicted pid.  If so exit because we failed.
   while (t_time == t_time_watch)
@@ -153,8 +163,8 @@ main (int argc, char **argv)
       pid = get_latest_pid ();
       if (pid >= to)
 	{
-	  printf
-	    ("\n\n[-] Failed: The next pid %d will be past our largest predicted pid in /tmp links\ntry a larger number of links for busier systems.\n",
+	  print_c
+	    (RED,"\n\n[-] Failed: The next pid %d will be past our largest predicted pid in /tmp links\ntry a larger number of links for busier systems.\n",
 	     pid);
 	  unlink_files (start);
 	  exit (1);
@@ -165,8 +175,8 @@ main (int argc, char **argv)
   if (t_time != t_time_watch)
     {
 
-      printf ("[+] The target file %s has been over written!\n", dest_name);
-      printf ("[+] Modification time changed from %s to %s\n", start_time,
+      print_c (GRN,"[+] The target file %s has been over written!\n", dest_name);
+      print_c (GRN,"[+] Modification time changed from %s to %s\n", start_time,
 	      ctime (&t_time_watch));
     }
 
@@ -217,8 +227,8 @@ unlink_files (files * fstruc)
   tmp = fstruc;
   fstruc = fstruc->next;
   free (tmp);
-  printf ("[+] Cleaning up....\n");
-  printf ("Unlinking ");
+  print_c (GRN,"[+] Cleaning up....\n");
+  print_c (GRN,"Unlinking ");
   while (fstruc)
     {
       tmp = fstruc;
@@ -230,7 +240,7 @@ unlink_files (files * fstruc)
   printf ("\n");
 }
 
-static void
+void
 sigterm (int sig)
 { //Our Signal Handler.  Delete any symlinks we've created.
   fprintf (stderr, "\n[+] Signal %d received. Exiting...\n", sig);
@@ -271,3 +281,18 @@ strsep (char **stringp, const char *delim)
   /* NOTREACHED */
 }
 #endif
+
+int print_c (char *color, const char *format,...)
+{
+   va_list arg;
+   int done;
+
+   va_start (arg, format);
+   fprintf(stdout,"%s",color);
+   done = vfprintf (stdout, format,arg);
+   fprintf(stdout,"%s",NRM);
+   va_end (arg);
+
+   return done;
+}
+

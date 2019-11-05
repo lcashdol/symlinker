@@ -1,6 +1,6 @@
 MAKE=gmake
 CC=gcc
-CFLAGS = -Wall -ggdb -O2 -D LINUX
+CFLAGS = -Wall -ggdb -O2 -D IRIX
 CLEAN = $(rm main.o symlink)
 
 
