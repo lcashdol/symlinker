@@ -70,8 +70,6 @@ main (int argc, char **argv)
 
   //Latest pid read from PROC add one to being the start of our for loop.
 
-  from = (get_latest_pid ()) + 1;
-
   if (argc < 4)
     {
 
@@ -80,6 +78,8 @@ main (int argc, char **argv)
       printf ("e.g. %s -n 100 dos_unix /etc/passwd\n\n", argv[0]);
       return (0);
     }
+
+  from = (get_latest_pid ()) + 1;
 
   while ((ch = getopt (argc, argv, "n:f:t:")) != -1)
     switch ((char) ch)
@@ -195,6 +195,10 @@ get_latest_pid (void)
   int x = 0, array[MAXSIZE]={0,0};
 
   dirp = opendir (PROC);
+  if (!dirp) {
+	  print_c(RED,"Error: can not read directory %s\n",PROC);
+	  exit(1);
+  }
   while ((direntp = readdir (dirp)) != NULL)
     {
       if (!strstr (direntp->d_name, ".") && isdigit((int)direntp->d_name[0])){
