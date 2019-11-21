@@ -4,6 +4,12 @@ Solaris Support - Done
 Use our get_lastest pid function to get the latest pid id instead of getpid() - Done
 allow special formatting of from file to be linked infrom e.g. - Done
 
-/tmp/file##_filename -> /tmp/file[PIDHERE]_filename
+/tmp/file##_filename -> /tmp/file[PIDHERE]_filename - Done
 
-Add ANSI Color.
+Add ANSI Color. - Done
+
+Removed array for pid storage
+
+Fix usage screen to reflect new features.
+
+Makefile should determine system type.

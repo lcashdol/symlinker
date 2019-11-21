@@ -37,18 +37,19 @@ typedef struct _files
 
 extern int errno;
 extern char *optarg;
-int scan_big (int *a, int n);
 int get_latest_pid (void);
 void unlink_files (files * fstruc);
 void sigterm (int sig);
-int print_c (char *color, const char *format,...);
+int print_c (char *color, const char *format, ...);
+int create_links (int f, int t, char *str, char *buf, char *tmp, char *des,
+		  files * fil);
 
 #ifdef IRIX
 #define PROC "/proc/pinfo"
 char *strsep (char **stringp, const char *delim);
 #endif
 
-#if defined(SOLARIS) || defined(LINUX)
+#if defined(SOLARIS) || defined(Linux)
 #define PROC "/proc"
 #endif
 
@@ -57,7 +58,7 @@ files *file_list, *tmp, *start;
 int
 main (int argc, char **argv)
 {
-  int x = 0, from = 0, errflg = 0, to = 0, result = 0, i = 0, pid = 0, ch = 0;
+  int from = 0, errflg = 0, to = 0, i = 0, pid = 0, ch = 0;
   char dest_name[MAXSIZE], from_name[MAXSIZE], tmp_name[MAXSIZE],
     start_time[26], *buffer, *s;
   struct stat buf;
@@ -73,9 +74,11 @@ main (int argc, char **argv)
   if (argc < 4)
     {
 
-      print_c (BLU,"####            Simlinker v1.6          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
-      printf ("Usage: %s -n # symlinks -f from_file -t to_file\n", argv[0]);
-      printf ("e.g. %s -n 100 dos_unix /etc/passwd\n\n", argv[0]);
+      print_c (BLU,
+	       "####            Simlinker v1.7          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
+      printf ("Usage: %s -n # symlinks -f from_file# -t to_file\n", argv[0]);
+      printf ("e.g. %s -n 100 -f /tmp/dos_unix# -t /etc/passwd\n\n", argv[0]);
+      printf ("Where # is the place to insert the pid number\n");
       return (0);
     }
 
@@ -112,7 +115,6 @@ main (int argc, char **argv)
 
   printf ("Starting from lastest process id read from %s: %d\n", PROC, from);
 
-
   i = stat (dest_name, &buf);
   if (i < 0)
     {
@@ -131,29 +133,13 @@ main (int argc, char **argv)
 
   printf ("[+] Symlinking ");
   buffer = from_name;
-  s = strsep (&buffer, "#");  //The # delimiter tells us where in the file name the pid is.
+  s = strsep (&buffer, "#");	//The # delimiter tells us where in the file name the pid is.
 
-  for (x = from; x < to; x++)
-    {
-      snprintf (tmp_name, 256, "%s%d%s", s, x, buffer);
-      printf ("%s->%s ", tmp_name, dest_name);
-      tmp = malloc (sizeof (files));
-      strncpy (tmp->filename, tmp_name, MAXSIZE);
-      tmp->next = file_list->next;
-      file_list->next = tmp;
-
-      result = symlink (dest_name, tmp_name);
-
-      if (result < 0)
-	{
-	  print_c (RED,"Error: %d, %s\n", result, strerror (errno));
-	  return (-1);
-	}
-    }
-
+  create_links (from, to, s, buffer, tmp_name, dest_name, file_list);
 
   print_c
-    (GRN,"\n[+] Waiting on a write to one of our predicted links in /tmp or pid to grow past the links we created.\n");
+    (GRN,
+     "\n[+] Waiting on a write to one of our predicted links in /tmp or pid to grow past the links we created.\n");
 // Watch the target file to see if it's over written and check to see if the newest process pid
 // is larger than our biggest predicted pid.  If so exit because we failed.
   while (t_time == t_time_watch)
@@ -164,7 +150,8 @@ main (int argc, char **argv)
       if (pid >= to)
 	{
 	  print_c
-	    (RED,"\n\n[-] Failed: The next pid %d will be past our largest predicted pid in /tmp links\ntry a larger number of links for busier systems.\n",
+	    (RED,
+	     "\n\n[-] Failed: The next pid %d will be past our largest predicted pid in /tmp links\ntry a larger number of links for busier systems.\n",
 	     pid);
 	  unlink_files (start);
 	  exit (1);
@@ -175,9 +162,10 @@ main (int argc, char **argv)
   if (t_time != t_time_watch)
     {
 
-      print_c (GRN,"[+] The target file %s has been over written!\n", dest_name);
-      print_c (GRN,"[+] Modification time changed from %s to %s\n", start_time,
-	      ctime (&t_time_watch));
+      print_c (GRN, "[+] The target file %s has been over written!\n",
+	       dest_name);
+      print_c (GRN, "[+] Modification time changed from %s to %s\n",
+	       start_time, ctime (&t_time_watch));
     }
 
   unlink_files (start);
@@ -188,51 +176,42 @@ main (int argc, char **argv)
 
 int
 get_latest_pid (void)
-{ //Read the PROC directory to look for the latest pid to start our loop from.
+{				//Read the PROC directory to look for the latest pid to start our loop from.
   //do this in a way where we don't spawn processes ourselves.
   DIR *dirp;
   struct dirent *direntp;
-  int x = 0, array[MAXSIZE]={0,0};
+  int big = 0, temp = 0;
 
   dirp = opendir (PROC);
-  if (!dirp) {
-	  print_c(RED,"Error: can not read directory %s\n",PROC);
-	  exit(1);
-  }
-  while ((direntp = readdir (dirp)) != NULL)
+  if (!dirp)
     {
-      if (!strstr (direntp->d_name, ".") && isdigit((int)direntp->d_name[0])){
-	array[x] =  atoi (direntp->d_name);
-      x++;
-      }
+      print_c (RED, "Error: can not read directory %s\n", PROC);
+      exit (1);
+    }
+  while ((direntp = readdir (dirp)) != NULL)
+    {				// we can figure out largest pid here with out creating storage
+      if (!strstr (direntp->d_name, ".")
+	  && isdigit ((int) direntp->d_name[0]))
+	{
+	  temp = atoi (direntp->d_name);
+	  if (temp > big)
+	    big = temp;
+	}
     }
   closedir (dirp);
-  return (scan_big (array, x));
-}
-
-
-int
-scan_big (int *a, int n)
-{ //sort out the largest integer in an array.
-  int big = 0, x;
-  big = a[0];
-  for (x = 0; x < n; x++)
-    {
-      if (a[x] > big)
-	big = a[x];
-    }
   return (big);
 }
 
+
 void
 unlink_files (files * fstruc)
-{ //Delete symlinks using our linked list as filename storage.
+{				//Delete symlinks using our linked list as filename storage.
   files *tmp;
   tmp = fstruc;
   fstruc = fstruc->next;
   free (tmp);
-  print_c (GRN,"[+] Cleaning up....\n");
-  print_c (GRN,"Unlinking ");
+  print_c (GRN, "[+] Cleaning up....\n");
+  print_c (GRN, "Unlinking ");
   while (fstruc)
     {
       tmp = fstruc;
@@ -246,10 +225,10 @@ unlink_files (files * fstruc)
 
 void
 sigterm (int sig)
-{ //Our Signal Handler.  Delete any symlinks we've created.
+{				//Our Signal Handler.  Delete any symlinks we've created.
   fprintf (stderr, "\n[+] Signal %d received. Exiting...\n", sig);
-  if (start) 
-  unlink_files (start);
+  if (start)
+    unlink_files (start);
   exit (EXIT_SUCCESS);
 }
 
@@ -257,7 +236,7 @@ sigterm (int sig)
 char *
 strsep (char **stringp, const char *delim)
 {
-  /*#Taken from the GNU .c library code.*/
+  /*#Taken from the GNU .c library code. */
   char *s;
   const char *spanp;
   int c, sc;
@@ -286,17 +265,44 @@ strsep (char **stringp, const char *delim)
 }
 #endif
 
-int print_c (char *color, const char *format,...)
+int
+print_c (char *color, const char *format, ...)
 {
-   va_list arg;
-   int done;
+  va_list arg;
+  int done;
 
-   va_start (arg, format);
-   fprintf(stdout,"%s",color);
-   done = vfprintf (stdout, format,arg);
-   fprintf(stdout,"%s",NRM);
-   va_end (arg);
+  va_start (arg, format);
+  fprintf (stdout, "%s", color);
+  done = vfprintf (stdout, format, arg);
+  fprintf (stdout, "%s", NRM);
+  va_end (arg);
 
-   return done;
+  return done;
 }
 
+int
+create_links (int f, int t, char *str, char *buf, char *tmp, char *des,
+	      files * fil)
+{
+  int x = 0, result = 0;
+  files *tmpf;
+
+  for (x = f; x < t; x++)
+    {
+      snprintf (tmp, MAXSIZE, "%s%d%s", str, x, buf);
+      printf ("%s->%s ", tmp, des);
+      tmpf = malloc (sizeof (files));
+      strncpy (tmpf->filename, tmp, MAXSIZE);
+      tmpf->next = fil->next;
+      fil->next = tmpf;
+
+      result = symlink (des, tmp);
+
+      if (result < 0)
+	{
+	  print_c (RED, "Error: %d, %s\n", result, strerror (errno));
+	  return (-1);
+	}
+    }
+  return (result);
+}

@@ -1,10 +1,12 @@
 MAKE=gmake
 CC=gcc
-CFLAGS = -Wall -ggdb -O2 -D LINUX
+ARCH = `uname -s`
+CFLAGS = -Wall -ggdb -O2 -D $(ARCH)
 CLEAN = $(rm main.o symlink)
 
 
 all	: 
+	@echo "Building for $(ARCH)"
 	make 	symlink
 
 symlink	: main.o
