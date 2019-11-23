@@ -295,7 +295,7 @@ create_links (int f, int t, char *str, char *buf, char *tmp, char *des,
       snprintf (tmp, MAXSIZE, "%s%d%s", str, x, buf);
       printf ("%s->%s ", tmp, des);
       tmpf = malloc (sizeof (files));
-      strncpy (tmpf->filename, tmp, MAXSIZE);
+      strncpy (tmpf->filename, tmp, MAXSIZE-1);
       tmpf->next = fil->next;
       fil->next = tmpf;
 
