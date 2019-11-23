@@ -173,7 +173,7 @@ main (int argc, char **argv)
 	  unlink_files (start);
 	  exit (1);
 	}
-
+      sleep(1);
     }
 
   if (t_time != t_time_watch)
