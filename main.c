@@ -58,7 +58,7 @@ int
 main (int argc, char **argv)
 {
   int x = 0, from = 0, errflg = 0, to = 0, result = 0, i = 0, pid = 0, ch = 0;
-  char dest_name[MAXSIZE], from_name[MAXSIZE], tmp_name[MAXSIZE],
+  char *dest_name = NULL, *from_name = NULL, tmp_name[MAXSIZE],
     start_time[26], *buffer, *s;
   struct stat buf;
   time_t t_time_watch, t_time;
@@ -88,10 +88,10 @@ main (int argc, char **argv)
 	to = atoi (optarg) + from;
 	break;
       case 'f':
-	strncpy (from_name, optarg, MAXSIZE);
+	  from_name = optarg;
 	break;
       case 't':
-	strncpy (dest_name, optarg, MAXSIZE);
+	  dest_name = optarg;
 	break;
       case '?':
 	errflg++;
