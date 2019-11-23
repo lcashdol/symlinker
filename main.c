@@ -103,6 +103,10 @@ main (int argc, char **argv)
       return (0);
     }
 
+  if(!strchr(from_name, '#')) {
+    printf("\n[-] ERROR: The -f argument must contains a # character.\n");
+    return (-1);
+  }
 
   //init our link list
   file_list = malloc (sizeof (files));
