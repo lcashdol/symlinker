@@ -37,15 +37,15 @@ typedef struct _files
 
 extern int errno;
 extern char *optarg;
-int scan_big (int *a, int n);
+int scan_big (int *, int);
 int get_latest_pid (void);
-void unlink_files (files * fstruc);
-void sigterm (int sig);
-int print_c (char *color, const char *format,...);
+void unlink_files (files *);
+void sigterm (int);
+int print_c (char *, const char *,...);
 
 #if __sgi
 #define PROC "/proc/pinfo"
-char *strsep (char **stringp, const char *delim);
+char *strsep (char **, const char *);
 #endif
 
 #if __sun || __linux__
