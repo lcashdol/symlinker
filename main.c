@@ -44,12 +44,12 @@ int print_c (char *color, const char *format, ...);
 int create_links (int f, int t, char *str, char *buf, char *tmp, char *des,
 		  files * fil);
 
-#ifdef IRIX
+#if __sgi
 #define PROC "/proc/pinfo"
 char *strsep (char **stringp, const char *delim);
 #endif
 
-#if defined(SOLARIS) || defined(Linux)
+#if __sun || __linux__
 #define PROC "/proc"
 #endif
 
@@ -232,7 +232,7 @@ sigterm (int sig)
   exit (EXIT_SUCCESS);
 }
 
-#ifdef IRIX
+#if __sgi
 char *
 strsep (char **stringp, const char *delim)
 {
