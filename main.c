@@ -75,7 +75,7 @@ main (int argc, char **argv)
 
       print_c (BLU,
 	       "####            Simlinker v1.7          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
-      printf ("Usage: %s -n # symlinks -f from_file# -t to_file\n", argv[0]);
+      printf ("Usage: %s -n <count> -f <symlink> -t <target_file>\n", argv[0]);
       printf ("e.g. %s -n 100 -f /tmp/dos_unix# -t /etc/passwd\n\n", argv[0]);
       printf ("Where # is the place to insert the pid number\n");
       return (0);
