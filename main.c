@@ -38,18 +38,17 @@ typedef struct _files
 extern int errno;
 extern char *optarg;
 int get_latest_pid (void);
-void unlink_files (files * fstruc);
-void sigterm (int sig);
-int print_c (char *color, const char *format, ...);
-int create_links (int f, int t, char *str, char *buf, char *tmp, char *des,
-		  files * fil);
+void unlink_files (files *);
+void sigterm (int);
+int print_c (char *, const char *, ...);
+int create_links (int, int, char *, char *, char *, char *, files *);
 
-#ifdef IRIX
+#if __sgi
 #define PROC "/proc/pinfo"
-char *strsep (char **stringp, const char *delim);
+char *strsep (char **, const char *);
 #endif
 
-#if defined(SOLARIS) || defined(Linux)
+#if __sun || __linux__
 #define PROC "/proc"
 #endif
 
@@ -59,7 +58,7 @@ int
 main (int argc, char **argv)
 {
   int from = 0, errflg = 0, to = 0, i = 0, pid = 0, ch = 0;
-  char dest_name[MAXSIZE], from_name[MAXSIZE], tmp_name[MAXSIZE],
+  char *dest_name = NULL, *from_name = NULL, tmp_name[MAXSIZE],
     start_time[26], *buffer, *s;
   struct stat buf;
   time_t t_time_watch, t_time;
@@ -76,7 +75,7 @@ main (int argc, char **argv)
 
       print_c (BLU,
 	       "####            Simlinker v1.7          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
-      printf ("Usage: %s -n # symlinks -f from_file# -t to_file\n", argv[0]);
+      printf ("Usage: %s -n <count> -f <symlink> -t <target_file>\n", argv[0]);
       printf ("e.g. %s -n 100 -f /tmp/dos_unix# -t /etc/passwd\n\n", argv[0]);
       printf ("Where # is the place to insert the pid number\n");
       return (0);
@@ -91,10 +90,10 @@ main (int argc, char **argv)
 	to = atoi (optarg) + from;
 	break;
       case 'f':
-	strncpy (from_name, optarg, MAXSIZE);
+	  from_name = optarg;
 	break;
       case 't':
-	strncpy (dest_name, optarg, MAXSIZE);
+	  dest_name = optarg;
 	break;
       case '?':
 	errflg++;
@@ -106,6 +105,10 @@ main (int argc, char **argv)
       return (0);
     }
 
+  if(!strchr(from_name, '#')) {
+    printf("\n[-] ERROR: The -f argument must contains a # character.\n");
+    return (-1);
+  }
 
   //init our link list
   file_list = malloc (sizeof (files));
@@ -156,7 +159,7 @@ main (int argc, char **argv)
 	  unlink_files (start);
 	  exit (1);
 	}
-
+      sleep(1);
     }
 
   if (t_time != t_time_watch)
@@ -232,7 +235,7 @@ sigterm (int sig)
   exit (EXIT_SUCCESS);
 }
 
-#ifdef IRIX
+#if __sgi
 char *
 strsep (char **stringp, const char *delim)
 {
@@ -292,7 +295,7 @@ create_links (int f, int t, char *str, char *buf, char *tmp, char *des,
       snprintf (tmp, MAXSIZE, "%s%d%s", str, x, buf);
       printf ("%s->%s ", tmp, des);
       tmpf = malloc (sizeof (files));
-      strncpy (tmpf->filename, tmp, MAXSIZE);
+      strncpy (tmpf->filename, tmp, MAXSIZE-1);
       tmpf->next = fil->next;
       fil->next = tmpf;
 
