@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 /*
 #Symlink creator to abuse files creation in /tmp where the pid is used in the filename.  
@@ -62,6 +63,9 @@ main (int argc, char **argv)
     start_time[26], *buffer, *s;
   struct stat buf;
   time_t t_time_watch, t_time;
+  bool checkt=false;
+  bool checkn=false;
+  bool checkf=false;
   //Allow users to ctrl + C we clean up the /tmp files
 
   signal (SIGTERM, sigterm);
@@ -74,7 +78,7 @@ main (int argc, char **argv)
     {
 
       print_c (BLU,
-	       "####            Simlinker v1.7          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
+	       "####            Simlinker v1.8          ####\n\n\nLarry W. Cashdollar\nOct/2019\n\n");
       printf ("Usage: %s -n <count> -f <symlink> -t <target_file>\n", argv[0]);
       printf ("e.g. %s -n 100 -f /tmp/dos_unix# -t /etc/passwd\n\n", argv[0]);
       printf ("Where # is the place to insert the pid number\n");
@@ -88,17 +92,21 @@ main (int argc, char **argv)
       {
       case 'n':
 	to = atoi (optarg) + from;
+        checkn =  true;
 	break;
       case 'f':
 	  from_name = optarg;
+        checkf =  true;
 	break;
       case 't':
 	  dest_name = optarg;
+        checkt =  true;
 	break;
       case '?':
 	errflg++;
       }
-  if (errflg)
+
+  if (errflg || !checkt || !checkf || !checkn)
     {
       fprintf (stderr, "Usage: %s -n # symlinks -f from_file -t to_file\n",
 	       argv[0]);
